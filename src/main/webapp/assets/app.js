@@ -85,3 +85,30 @@
     alert('Kéo nút này lên thanh dấu trang, rồi bấm nó trên trang đăng ký của nền tảng.');
   });
 })();
+
+// Theo dõi lượt chạy trên trình duyệt
+(function () {
+  var box = document.getElementById('runner');
+  if (!box) return;
+  var idle = box.querySelector('.runner-idle'), live = box.querySelector('.runner-live'), busy = box.querySelector('.runner-busy');
+  var wasRunning = false;
+  function tick() {
+    fetch(box.getAttribute('data-status-url'), { credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (s) {
+        var mine = s.running && s.total !== undefined;
+        live.hidden = !mine; idle.hidden = mine || s.busyElsewhere; busy.hidden = !s.busyElsewhere && !s.otherProject;
+        if (mine) {
+          ['current', 'index', 'total', 'done', 'waiting', 'skipped'].forEach(function (k) {
+            box.querySelector('[data-k="' + k + '"]').textContent = s[k] == null ? '…' : s[k];
+          });
+          box.querySelector('[data-k="log"]').textContent = (s.log || []).join('\n');
+        }
+        if (wasRunning && !s.running) location.reload(); // lượt chạy kết thúc → tải lại bảng
+        wasRunning = !!s.running;
+      })
+      .catch(function () {})
+      .then(function () { setTimeout(tick, wasRunning ? 2000 : 5000); });
+  }
+  tick();
+})();

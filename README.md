@@ -46,6 +46,8 @@ Không ghi khóa vào mã nguồn hay commit lên git.
 | `HOSOWEB_DB_USER`, `HOSOWEB_DB_PASSWORD` | Tài khoản CSDL (mặc định `sa` / rỗng). |
 | `SINBYTE_API_KEY` | Khóa Sinbyte bí mật trên máy chủ. Khi có, để trống ô khóa trên form gửi. |
 | `SINBYTE_API_URL` | Endpoint Sinbyte, mặc định `https://app.sinbyte.com/api/indexing/`. |
+| `HOSOWEB_BROWSER_PATH` | Đường dẫn trình duyệt cho bộ chạy (mặc định: Google Chrome đã cài, nếu không có thì Chromium). |
+| `HOSOWEB_BROWSER_PROFILE` | Thư mục hồ sơ trình duyệt của bộ chạy, mặc định `data/browser-profile`. |
 | `SINBYTE_MOCK=true` | Trả phản hồi mô phỏng, không gọi Sinbyte thật (dùng để thử). |
 
 ## Cách dùng
@@ -63,14 +65,21 @@ Không ghi khóa vào mã nguồn hay commit lên git.
 4. **⚡ Tự điền:** trên màn hình Tạo, kéo nút *Tự điền* lên thanh dấu trang (một lần cho mỗi dự án). Trên trang đăng ký của nền tảng,
    bấm dấu trang đó để điền email, username, họ tên, tên thương hiệu, website, điện thoại, mô tả… Một khung nhỏ cho đổi
    username ưu tiên 1/2/3. Script **không** điền mật khẩu, **không** đụng ô CAPTCHA / mã xác minh và **không** tự bấm gửi.
-5. **Tạo** (từng dòng) hoặc **Tạo hàng loạt** (lần lượt các mục *Chưa tạo / Đang xử lý / Chờ xác minh / Chờ CAPTCHA*):
+5. **▶ Chạy tự động trên trình duyệt** (tab Danh sách): ứng dụng mở Chrome trên máy đang chạy nó, lần lượt vào trang đăng ký
+   của từng nền tảng còn cần xử lý và tự điền thông tin dự án. Một khung điều khiển ở góc phải trên mỗi trang:
+   **✅ Đây là trang hồ sơ** (lưu URL hiện tại + username, đánh dấu Hoàn tất, sang nền tảng kế tiếp), **⚡ Tự điền lại**,
+   **⏳ Chờ xác minh**, **🧩 Chờ CAPTCHA**, **⏭ Bỏ qua** (hoặc đóng tab), **⛔ Dừng**. Tiến độ và nhật ký hiện trên tab Danh sách.
+   Bạn chỉ nhập mật khẩu, giải CAPTCHA, bấm Gửi và xác minh email. Hồ sơ trình duyệt lưu ở `data/browser-profile`
+   nên đăng nhập Google / các trang được giữ cho lần sau. Dùng Google Chrome nếu máy có, nếu không tự tải Chromium.
+   Chỉ hoạt động khi ứng dụng chạy trên chính máy của bạn.
+6. **Tạo** (từng dòng) hoặc **Tạo hàng loạt** (lần lượt các mục *Chưa tạo / Đang xử lý / Chờ xác minh / Chờ CAPTCHA*):
    màn hình hiển thị nội dung đã lưu với nút **Sao chép**, username theo thứ tự (nút **Dùng**), logo, cover, Gmail / SMS,
    và nút mở trang đăng ký. Người dùng tự điền, gửi và xác minh trên trang của nền tảng.
-6. Lưu username thực tế, URL hồ sơ, trạng thái, bước cần làm, ghi chú. **Hoàn tất chỉ được chọn khi có URL hồ sơ thực tế**
+7. Lưu username thực tế, URL hồ sơ, trạng thái, bước cần làm, ghi chú. **Hoàn tất chỉ được chọn khi có URL hồ sơ thực tế**
    (kiểm tra cả ở máy chủ). Lưu lại một mục đã hoàn tất không đổi thời điểm hoàn tất.
-7. **Liên kết social**: lưu các URL social; khi cập nhật nền tảng chọn **Có hỗ trợ** và đánh dấu link đã gắn → xuất trong CSV.
-8. **Kết quả**: bảng hồ sơ hoàn tất, **Tải CSV kết quả** và **Tải CSV tiến độ** (UTF-8 có BOM, mở thẳng bằng Excel).
-9. **Submit index**: xem trước URL hoàn tất chưa gửi (tối đa 100 / lượt), chọn và gửi. Kết quả ghi trạng thái
+8. **Liên kết social**: lưu các URL social; khi cập nhật nền tảng chọn **Có hỗ trợ** và đánh dấu link đã gắn → xuất trong CSV.
+9. **Kết quả**: bảng hồ sơ hoàn tất, **Tải CSV kết quả** và **Tải CSV tiến độ** (UTF-8 có BOM, mở thẳng bằng Excel).
+10. **Submit index**: xem trước URL hoàn tất chưa gửi (tối đa 100 / lượt), chọn và gửi. Kết quả ghi trạng thái
    *Đã gửi Sinbyte* / *Gửi lỗi* cùng mã tác vụ nếu Sinbyte trả về. Đổi URL hồ sơ sẽ đặt lại trạng thái gửi.
 
 ## Bảo mật
@@ -90,7 +99,8 @@ chỉ nhận URL `http(s)`; HTML được escape; ô CSV bắt đầu bằng `= 
 trạng thái *Chờ xác minh* / *Chờ CAPTCHA* kèm *bước cần làm*, chống tạo trùng.
 
 Chưa làm:
-- **Đăng ký tự động** (robot tự điền form trên nền tảng), **đọc OTP từ Gmail** theo từng dự án, khôi phục phiên trình duyệt đang chờ CAPTCHA.
+- **Tự bấm gửi / tự xác minh**: bộ chạy tự mở trang và tự điền, nhưng việc gửi form, CAPTCHA và xác minh email do người dùng làm.
+  **Đọc OTP từ Gmail** theo từng dự án chưa có.
   Các mục này cần trình điều khiển trình duyệt và adapter riêng cho từng nền tảng, OAuth Gmail (Google Cloud project, phạm vi `gmail.readonly`),
   và cần xem điều khoản của từng nền tảng: nhiều nơi cấm tạo tài khoản tự động.
 - Nhập dữ liệu từ bản cũ lưu trong trình duyệt: cần định dạng dữ liệu (localStorage) của bản cũ để viết bộ chuyển.

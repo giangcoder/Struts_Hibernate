@@ -134,6 +134,26 @@
             </result>
         </action>
 
+        <!-- Chạy trên trình duyệt -->
+        <action name="runnerStart" class="vn.hosoweb.web.RunnerAction" method="start">
+            <result type="redirectAction">
+                <param name="actionName">platforms</param>
+                <param name="projectId">${projectId}</param>
+            </result>
+        </action>
+        <action name="runnerStop" class="vn.hosoweb.web.RunnerAction" method="stop">
+            <result type="redirectAction">
+                <param name="actionName">platforms</param>
+                <param name="projectId">${projectId}</param>
+            </result>
+        </action>
+        <action name="runnerStatus" class="vn.hosoweb.web.RunnerAction" method="status">
+            <result name="json" type="stream">
+                <param name="contentType">application/json; charset=UTF-8</param>
+                <param name="inputName">json</param>
+            </result>
+        </action>
+
         <!-- Liên kết social -->
         <action name="socialLinks" class="vn.hosoweb.web.SocialLinkAction" method="list">
             <result>/WEB-INF/jsp/social-links.jsp</result>

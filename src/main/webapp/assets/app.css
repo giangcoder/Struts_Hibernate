@@ -140,3 +140,8 @@ details.meta[open] summary { margin-bottom: .75rem; }
 .autofill { display: flex; gap: .75rem; align-items: center; background: var(--surface-2); border: 1px dashed var(--border); border-radius: 8px; padding: .6rem .75rem; margin-bottom: .75rem; }
 .btn.bookmarklet { cursor: grab; border-style: dashed; flex-shrink: 0; }
 @media (max-width: 820px) { .autofill { flex-direction: column; align-items: flex-start; } }
+.runner-idle { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.runner-idle > div { flex: 1; min-width: 260px; }
+.runner-form { display: flex; gap: .5rem; } .runner-form select { width: auto; margin: 0; }
+.runner-top { display: flex; justify-content: space-between; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.runner-log { background: var(--surface-2); border-radius: 8px; padding: .6rem .75rem; max-height: 220px; overflow: auto; font-size: .8rem; margin: .75rem 0 0; white-space: pre-wrap; }

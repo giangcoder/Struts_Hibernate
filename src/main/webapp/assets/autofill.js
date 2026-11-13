@@ -63,6 +63,7 @@ function (D) {
   }
   function run() {
     filled = [];
+    window.__hosowebUser = U[ui] || '';
     var els = document.querySelectorAll('input, textarea');
     for (var i = 0; i < els.length; i++) {
       var el = els[i];
@@ -107,7 +108,7 @@ function (D) {
       U.forEach(function (u, i) {
         var bt = document.createElement('button'); bt.type = 'button'; bt.textContent = (i + 1) + '. ' + u;
         bt.style.cssText = 'margin:0 6px 6px 0;padding:3px 8px;border-radius:6px;border:1px solid #6d95ff;background:' + (i === ui ? '#6d95ff' : 'transparent') + ';color:#fff;cursor:pointer;font:inherit';
-        bt.onclick = function () { ui = i; run(); };
+        bt.onclick = function () { ui = i; (window.__hosowebFill || run)(); };
         p.appendChild(bt);
       });
     }
@@ -116,5 +117,6 @@ function (D) {
     x.onclick = function () { p.remove(); };
     p.appendChild(x);
   }
+  window.__hosowebFill = run;
   run();
 }

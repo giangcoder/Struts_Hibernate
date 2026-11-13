@@ -9,6 +9,39 @@
   </s:iterator>
 </div>
 
+<section class="panel runner" id="runner" data-status-url="<s:url action='runnerStatus'><s:param name='projectId' value='project.id'/></s:url>">
+  <div class="runner-idle">
+    <div>
+      <h2 class="m0">▶ Chạy tự động trên trình duyệt</h2>
+      <p class="small muted m0">Ứng dụng mở Chrome trên máy này, lần lượt vào trang đăng ký và tự điền thông tin dự án.
+        Bạn chỉ nhập mật khẩu, giải CAPTCHA, bấm Gửi, xác minh email, rồi bấm <b>"Đây là trang hồ sơ"</b> — URL được lưu và chuyển sang nền tảng kế tiếp.</p>
+    </div>
+    <form method="post" action="<s:url action='runnerStart'/>" class="runner-form">
+      <input type="hidden" name="csrf" value="<s:property value='csrf'/>">
+      <input type="hidden" name="projectId" value="<s:property value='project.id'/>">
+      <select name="mode">
+        <option value="">Mọi mục chưa xong</option>
+        <option value="auto">Chỉ mục không CAPTCHA</option>
+        <option value="captcha">Chỉ mục cần CAPTCHA</option>
+      </select>
+      <button class="btn primary" type="submit">▶ Chạy</button>
+    </form>
+  </div>
+  <div class="runner-live" hidden>
+    <div class="runner-top">
+      <div><b>Đang chạy:</b> <span data-k="current">…</span> (<span data-k="index">0</span>/<span data-k="total">0</span>)
+        · ✅ <span data-k="done">0</span> · ⏳ <span data-k="waiting">0</span> · ⏭ <span data-k="skipped">0</span></div>
+      <form method="post" action="<s:url action='runnerStop'/>" class="inline">
+        <input type="hidden" name="csrf" value="<s:property value='csrf'/>">
+        <input type="hidden" name="projectId" value="<s:property value='project.id'/>">
+        <button class="btn sm danger" type="submit">Dừng</button>
+      </form>
+    </div>
+    <pre class="runner-log" data-k="log"></pre>
+  </div>
+  <div class="runner-busy small flash info" hidden>Một lượt chạy khác đang chạy trên máy này. Dừng lượt đó trước khi chạy dự án này.</div>
+</section>
+
 <div class="toolbar">
   <form method="get" action="<s:url action='platforms'/>" class="filters">
     <input type="hidden" name="projectId" value="<s:property value='project.id'/>">
