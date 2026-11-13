@@ -1,0 +1,23 @@
+<div class="project-head">
+  <div class="ph-main">
+    <s:if test="project.logoUrl != null"><img class="ph-logo" src="<s:property value='project.logoUrl'/>" alt=""></s:if>
+    <div>
+      <h1><s:property value="project.brandName"/></h1>
+      <div class="muted small">
+        <s:if test="project.website != null"><a href="<s:property value='project.website'/>" target="_blank" rel="noopener noreferrer"><s:property value="project.website"/></a> · </s:if>
+        <s:property value="project.market"/> · <s:property value="project.language"/>
+      </div>
+    </div>
+  </div>
+  <div class="ph-progress">
+    <div class="small"><b><s:property value="doneCount"/></b> / <s:property value="total"/> hoàn tất</div>
+    <div class="bar"><span style="width: <s:property value='donePercent'/>%"></span></div>
+  </div>
+</div>
+<nav class="tabs">
+  <a class="<s:if test='#tab == "info"'>on</s:if>" href="<s:url action='projectEdit'><s:param name='projectId' value='project.id'/></s:url>">Thông tin</a>
+  <a class="<s:if test='#tab == "list"'>on</s:if>" href="<s:url action='platforms'><s:param name='projectId' value='project.id'/></s:url>">Danh sách</a>
+  <a class="<s:if test='#tab == "social"'>on</s:if>" href="<s:url action='socialLinks'><s:param name='projectId' value='project.id'/></s:url>">Liên kết social</a>
+  <a class="<s:if test='#tab == "results"'>on</s:if>" href="<s:url action='results'><s:param name='projectId' value='project.id'/></s:url>">Kết quả</a>
+  <a class="<s:if test='#tab == "sinbyte"'>on</s:if>" href="<s:url action='sinbyte'><s:param name='projectId' value='project.id'/></s:url>">Submit index</a>
+</nav>

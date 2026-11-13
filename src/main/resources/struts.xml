@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 6.0//EN"
+        "https://struts.apache.org/dtds/struts-6.0.dtd">
+<struts>
+    <constant name="struts.devMode" value="false"/>
+    <constant name="struts.i18n.encoding" value="UTF-8"/>
+    <constant name="struts.action.extension" value=","/>
+    <constant name="struts.enable.DynamicMethodInvocation" value="false"/>
+    <constant name="struts.allowlist.packageNames" value="vn.hosoweb.model,vn.hosoweb.web"/>
+    <constant name="struts.ui.theme" value="simple"/>
+
+    <package name="base" extends="struts-default" abstract="true">
+        <interceptors>
+            <interceptor name="csrf" class="vn.hosoweb.web.CsrfInterceptor"/>
+            <interceptor name="auth" class="vn.hosoweb.web.AuthInterceptor"/>
+            <interceptor-stack name="publicStack">
+                <interceptor-ref name="csrf"/>
+                <interceptor-ref name="defaultStack"/>
+            </interceptor-stack>
+            <interceptor-stack name="appStack">
+                <interceptor-ref name="auth"/>
+                <interceptor-ref name="csrf"/>
+                <interceptor-ref name="defaultStack"/>
+            </interceptor-stack>
+        </interceptors>
+        <default-interceptor-ref name="publicStack"/>
+        <global-results>
+            <result name="login" type="redirectAction">login</result>
+            <result name="home" type="redirectAction">projects</result>
+            <result name="csrf">/WEB-INF/jsp/error.jsp</result>
+            <result name="notfound">/WEB-INF/jsp/notfound.jsp</result>
+            <result name="error">/WEB-INF/jsp/error.jsp</result>
+        </global-results>
+        <global-exception-mappings>
+            <exception-mapping exception="java.lang.Exception" result="error"/>
+        </global-exception-mappings>
+    </package>
+
+    <!-- Trang công khai -->
+    <package name="public" namespace="/" extends="base">
+        <default-action-ref name="index"/>
+        <action name="index" class="vn.hosoweb.web.AuthAction" method="loginForm">
+            <result name="input" type="redirectAction">login</result>
+        </action>
+        <action name="login" class="vn.hosoweb.web.AuthAction" method="loginForm">
+            <result name="input">/WEB-INF/jsp/login.jsp</result>
+        </action>
+        <action name="doLogin" class="vn.hosoweb.web.AuthAction" method="login">
+            <result name="input">/WEB-INF/jsp/login.jsp</result>
+            <result type="redirectAction">projects</result>
+        </action>
+        <action name="register" class="vn.hosoweb.web.AuthAction" method="registerForm">
+            <result name="input">/WEB-INF/jsp/register.jsp</result>
+        </action>
+        <action name="doRegister" class="vn.hosoweb.web.AuthAction" method="register">
+            <result name="input">/WEB-INF/jsp/register.jsp</result>
+            <result type="redirectAction">projectEdit</result>
+        </action>
+        <action name="logout" class="vn.hosoweb.web.AuthAction" method="logout">
+            <result type="redirectAction">login</result>
+        </action>
+    </package>
+
+    <!-- Cần đăng nhập -->
+    <package name="app" namespace="/" extends="base">
+        <default-interceptor-ref name="appStack"/>
+
+        <!-- Dự án -->
+        <action name="projects" class="vn.hosoweb.web.ProjectAction" method="list">
+            <result>/WEB-INF/jsp/projects.jsp</result>
+        </action>
+        <action name="projectEdit" class="vn.hosoweb.web.ProjectAction" method="edit">
+            <result name="input">/WEB-INF/jsp/project-edit.jsp</result>
+        </action>
+        <action name="projectSave" class="vn.hosoweb.web.ProjectAction" method="save">
+            <result name="input">/WEB-INF/jsp/project-edit.jsp</result>
+            <result type="redirectAction">
+                <param name="actionName">platforms</param>
+                <param name="projectId">${projectId}</param>
+            </result>
+        </action>
+        <action name="projectDelete" class="vn.hosoweb.web.ProjectAction" method="delete">
+            <result type="redirectAction">projects</result>
+        </action>
+
+        <!-- Danh sách nền tảng -->
+        <action name="platforms" class="vn.hosoweb.web.PlatformAction" method="list">
+            <result>/WEB-INF/jsp/platforms.jsp</result>
+        </action>
+        <action name="platformPaste" class="vn.hosoweb.web.PlatformAction" method="pasteForm">
+            <result name="input">/WEB-INF/jsp/paste.jsp</result>
+        </action>
+        <action name="platformPasteSave" class="vn.hosoweb.web.PlatformAction" method="paste">
+            <result name="input">/WEB-INF/jsp/paste.jsp</result>
+            <result type="redirectAction">
+                <param name="actionName">platforms</param>
+                <param name="projectId">${projectId}</param>
+            </result>
+        </action>
+        <action name="platformBulk" class="vn.hosoweb.web.PlatformAction" method="bulk">
+            <result type="redirectAction">
+                <param name="actionName">platforms</param>
+                <param name="projectId">${projectId}</param>
+            </result>
+        </action>
+        <action name="platformCreate" class="vn.hosoweb.web.PlatformAction" method="create">
+            <result name="input">/WEB-INF/jsp/create.jsp</result>
+        </action>
+        <action name="platformBatch" class="vn.hosoweb.web.PlatformAction" method="batch">
+            <result name="input">/WEB-INF/jsp/create.jsp</result>
+            <result name="done" type="redirectAction">
+                <param name="actionName">platforms</param>
+                <param name="projectId">${projectId}</param>
+            </result>
+        </action>
+        <action name="platformSave" class="vn.hosoweb.web.PlatformAction" method="save">
+            <result name="input">/WEB-INF/jsp/create.jsp</result>
+            <result type="redirectAction">
+                <param name="actionName">platforms</param>
+                <param name="projectId">${projectId}</param>
+            </result>
+            <result name="next" type="redirectAction">
+                <param name="actionName">platformBatch</param>
+                <param name="projectId">${projectId}</param>
+                <param name="afterId">${afterId}</param>
+            </result>
+        </action>
+        <action name="platformDelete" class="vn.hosoweb.web.PlatformAction" method="delete">
+            <result type="redirectAction">
+                <param name="actionName">platforms</param>
+                <param name="projectId">${projectId}</param>
+            </result>
+        </action>
+
+        <!-- Liên kết social -->
+        <action name="socialLinks" class="vn.hosoweb.web.SocialLinkAction" method="list">
+            <result>/WEB-INF/jsp/social-links.jsp</result>
+        </action>
+        <action name="socialLinkAdd" class="vn.hosoweb.web.SocialLinkAction" method="add">
+            <result type="redirectAction">
+                <param name="actionName">socialLinks</param>
+                <param name="projectId">${projectId}</param>
+            </result>
+        </action>
+        <action name="socialLinkDelete" class="vn.hosoweb.web.SocialLinkAction" method="delete">
+            <result type="redirectAction">
+                <param name="actionName">socialLinks</param>
+                <param name="projectId">${projectId}</param>
+            </result>
+        </action>
+
+        <!-- Kết quả -->
+        <action name="results" class="vn.hosoweb.web.ResultAction" method="results">
+            <result>/WEB-INF/jsp/results.jsp</result>
+        </action>
+        <action name="csvResults" class="vn.hosoweb.web.ResultAction" method="csvResults">
+            <result name="csv" type="stream">
+                <param name="contentType">text/csv; charset=UTF-8</param>
+                <param name="inputName">csvStream</param>
+                <param name="contentDisposition">attachment; filename="${csvName}"</param>
+            </result>
+        </action>
+        <action name="csvProgress" class="vn.hosoweb.web.ResultAction" method="csvProgress">
+            <result name="csv" type="stream">
+                <param name="contentType">text/csv; charset=UTF-8</param>
+                <param name="inputName">csvStream</param>
+                <param name="contentDisposition">attachment; filename="${csvName}"</param>
+            </result>
+        </action>
+        <action name="sinbyte" class="vn.hosoweb.web.ResultAction" method="sinbyte">
+            <result>/WEB-INF/jsp/sinbyte.jsp</result>
+        </action>
+        <action name="sinbyteSubmit" class="vn.hosoweb.web.ResultAction" method="sinbyteSubmit">
+            <result type="redirectAction">
+                <param name="actionName">results</param>
+                <param name="projectId">${projectId}</param>
+            </result>
+        </action>
+    </package>
+</struts>
