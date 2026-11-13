@@ -120,7 +120,7 @@ label.check { display: flex; gap: .5rem; align-items: baseline; font-weight: 400
 .previews { display: flex; gap: 1rem; margin-bottom: .75rem; }
 .prev-logo { width: 72px; height: 72px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); background: var(--surface-2); }
 .prev-cover { width: 240px; height: 72px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); background: var(--surface-2); }
-img:not([src]) { visibility: hidden; }
+img:not([src]) { display: none !important; }
 .social-box { margin-bottom: .75rem; }
 details.meta { border: 1px solid var(--border); border-radius: 8px; padding: .5rem .75rem; margin: 1rem 0; }
 details.meta summary { cursor: pointer; font-weight: 500; }
@@ -145,3 +145,14 @@ details.meta[open] summary { margin-bottom: .75rem; }
 .runner-form { display: flex; gap: .5rem; } .runner-form select { width: auto; margin: 0; }
 .runner-top { display: flex; justify-content: space-between; align-items: center; gap: .5rem; flex-wrap: wrap; }
 .runner-log { background: var(--surface-2); border-radius: 8px; padding: .6rem .75rem; max-height: 220px; overflow: auto; font-size: .8rem; margin: .75rem 0 0; white-space: pre-wrap; }
+.steps { display: flex; gap: .25rem; margin-bottom: 1.25rem; overflow-x: auto; border-bottom: 1px solid var(--border); }
+.steps .step { display: flex; align-items: center; gap: .45rem; padding: .6rem .9rem; color: var(--muted); border-bottom: 2px solid transparent; white-space: nowrap; font-weight: 500; }
+.steps .step:hover { text-decoration: none; color: var(--text); }
+.steps .step .n { width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: .75rem; background: var(--surface-2); border: 1px solid var(--border); }
+.steps .step.on { color: var(--text); border-bottom-color: var(--accent); }
+.steps .step.on .n { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.steps .step.done .n { background: var(--ok-bg); color: var(--ok); border-color: var(--ok-bg); }
+.wide-card { max-width: 480px; margin-top: 1.5rem; }
+.media-edit { display: flex; gap: 1rem; flex-wrap: wrap; } .media-edit .grow { flex: 1; min-width: 240px; }
+.media-edit img { margin-bottom: .5rem; display: block; } .media-edit .prev-cover { width: 100%; max-width: 480px; height: 96px; }
+details.more summary { cursor: pointer; } details.more[open] summary { margin-bottom: 1rem; }

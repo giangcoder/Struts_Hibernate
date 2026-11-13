@@ -1,7 +1,9 @@
 package vn.hosoweb.web;
 
 import org.apache.struts2.interceptor.parameter.StrutsParameter;
+import vn.hosoweb.model.Platform;
 import vn.hosoweb.model.Project;
+import vn.hosoweb.model.SocialLink;
 import vn.hosoweb.model.User;
 import vn.hosoweb.service.Repo;
 import vn.hosoweb.util.HibernateUtil;
@@ -13,6 +15,7 @@ public class ProjectAction extends ProjectScopedAction {
     private List<Project> projects = List.of();
     private Map<Long, long[]> progress = new HashMap<>();
     private Project form = new Project();
+    private String linksText;
 
     /** Trang chủ: danh sách dự án. */
     public String list() {
@@ -33,12 +36,95 @@ public class ProjectAction extends ProjectScopedAction {
         return SUCCESS;
     }
 
+    /** Bước 1: tạo dự án chỉ với Tên + Website. */
+    public String newForm() { return INPUT; }
+
+    public String create() {
+        String name = trim(form.getBrandName());
+        String site = Urls.normalize(form.getWebsite());
+        if (name == null) addFieldError("form.brandName", "Nhập tên dự án / thương hiệu.");
+        if (site != null && !Urls.isHttpUrl(site)) addFieldError("form.website", "Website không hợp lệ.");
+        if (hasFieldErrors()) return INPUT;
+        projectId = HibernateUtil.tx(s -> {
+            Project p = new Project();
+            p.setOwner(s.getReference(User.class, uid()));
+            Project f = new Project();
+            f.setBrandName(name);
+            f.setWebsite(site);
+            f.setTitle(name);
+            List<String> u = suggestUsernames(name, site);
+            if (u.size() > 0) f.setUsername1(u.get(0));
+            if (u.size() > 1) f.setUsername2(u.get(1));
+            if (u.size() > 2) f.setUsername3(u.get(2));
+            p.copyEditableFrom(f);
+            s.persist(p);
+            return p.getId();
+        });
+        flash("Đã tạo dự án. Bước 2: điền hồ sơ (logo, banner, mô tả, liên kết).");
+        return SUCCESS;
+    }
+
+    /** Gợi ý username từ tên (bỏ dấu) và tên miền. */
+    static List<String> suggestUsernames(String name, String site) {
+        String base = java.text.Normalizer.normalize(name.replace('đ', 'd').replace('Đ', 'D'), java.text.Normalizer.Form.NFD)
+                .replaceAll("\\p{M}+", "").toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]+", "");
+        String host = site == null ? null : Urls.host(site);
+        String dom = host == null ? "" : host.split("\\.")[0].replaceAll("[^a-z0-9]", "");
+        LinkedHashSet<String> s = new LinkedHashSet<>();
+        if (!dom.isEmpty()) s.add(dom);
+        if (!base.isEmpty()) s.add(base.length() > 24 ? base.substring(0, 24) : base);
+        String b = dom.isEmpty() ? base : dom;
+        if (!b.isEmpty()) { s.add(b + "official"); s.add(b + "vn"); }
+        return new ArrayList<>(s).subList(0, Math.min(3, s.size()));
+    }
+
     public String edit() {
-        if (projectId == null) { form = new Project(); return INPUT; }
-        boolean ok = HibernateUtil.tx(s -> loadProject(s));
+        if (projectId == null) return "new";
+        boolean ok = HibernateUtil.tx(s -> {
+            if (!loadProject(s)) return false;
+            linksText = linksToText(Repo.socialLinks(s, project.getId()));
+            return true;
+        });
         if (!ok) return "notfound";
         form = project;
         return INPUT;
+    }
+
+    private static String linksToText(List<SocialLink> links) {
+        StringBuilder sb = new StringBuilder();
+        for (SocialLink l : links) sb.append(l.getUrl()).append('\n');
+        return sb.toString();
+    }
+
+    /** Đồng bộ ô "Liên kết" (mỗi dòng một URL) vào bảng SocialLink, giữ id của link không đổi. */
+    private int syncLinks(org.hibernate.Session s, Project p) {
+        List<String> urls = new ArrayList<>();
+        int bad = 0;
+        if (linksText != null) for (String line : linksText.split("\\r?\\n")) {
+            String u = Urls.normalize(line);
+            if (u == null) continue;
+            if (Urls.isHttpUrl(u)) { if (!urls.contains(u)) urls.add(u); } else bad++;
+        }
+        List<SocialLink> existing = Repo.socialLinks(s, p.getId());
+        Set<String> have = new HashSet<>();
+        for (SocialLink l : existing) {
+            if (urls.contains(l.getUrl())) { have.add(l.getUrl()); continue; }
+            for (Platform pl : Repo.platforms(s, p.getId())) {
+                Set<Long> set = pl.getAttachedLinkIdSet();
+                if (set.remove(l.getId())) pl.setAttachedLinkIdSet(set);
+            }
+            s.remove(l);
+        }
+        for (String u : urls) {
+            if (have.contains(u)) continue;
+            SocialLink l = new SocialLink();
+            l.setProject(p);
+            l.setUrl(u);
+            String h = Urls.host(u);
+            l.setLabel(h == null ? u : (h.length() > 100 ? h.substring(0, 100) : h));
+            s.persist(l);
+        }
+        return bad;
     }
 
     public String save() {
@@ -58,22 +144,19 @@ public class ProjectAction extends ProjectScopedAction {
             if (projectId != null) HibernateUtil.run(s -> loadProject(s));
             return INPUT;
         }
+        if (projectId == null) return "new";
+        int[] bad = {0};
         Long id = HibernateUtil.tx(s -> {
-            Project p;
-            if (projectId == null) {
-                p = new Project();
-                p.setOwner(s.getReference(User.class, uid()));
-            } else {
-                p = Repo.project(s, uid(), projectId);
-                if (p == null) return null;
-            }
+            Project p = Repo.project(s, uid(), projectId);
+            if (p == null) return null;
             p.copyEditableFrom(form);
-            if (projectId == null) s.persist(p);
+            bad[0] = syncLinks(s, p);
             return p.getId();
         });
         if (id == null) return "notfound";
         projectId = id;
-        flash("Đã lưu thông tin dự án.");
+        if (bad[0] > 0) flashError(bad[0] + " dòng liên kết không phải URL hợp lệ nên đã bỏ qua.");
+        flash("Đã lưu hồ sơ. Bước 3: dán danh sách nền tảng rồi bấm ▶ Chạy để tạo profile.");
         return SUCCESS;
     }
 
@@ -96,6 +179,8 @@ public class ProjectAction extends ProjectScopedAction {
 
     @StrutsParameter(depth = 1)
     public Project getForm() { return form; }
+    public String getLinksText() { return linksText; }
+    @StrutsParameter public void setLinksText(String v) { linksText = v; }
 
     public List<String> getGmailStatuses() { return List.of("Chưa kết nối", "Đã kết nối", "Cần cấp lại quyền"); }
     public List<String> getBusinessTypes() { return List.of("", "Doanh nghiệp", "Hộ kinh doanh", "Cá nhân", "Tổ chức phi lợi nhuận", "Khác"); }

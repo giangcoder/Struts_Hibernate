@@ -2,17 +2,11 @@
 <s:set var="tab" value="'list'"/>
 <%@ include file="_tabs.jspf" %>
 
-<div class="stat-row">
-  <s:iterator value="stats">
-    <a class="stat" href="<s:url action='platforms'><s:param name='projectId' value='project.id'/><s:param name='filterStatus' value='key'/></s:url>">
-      <span class="num"><s:property value="value"/></span><span class="lbl"><s:property value="key"/></span></a>
-  </s:iterator>
-</div>
-
+<s:if test="total > 0">
 <section class="panel runner" id="runner" data-status-url="<s:url action='runnerStatus'><s:param name='projectId' value='project.id'/></s:url>">
   <div class="runner-idle">
     <div>
-      <h2 class="m0">▶ Chạy tự động trên trình duyệt</h2>
+      <h2 class="m0">▶ Tạo profile tự động</h2>
       <p class="small muted m0">Ứng dụng mở Chrome trên máy này, lần lượt vào trang đăng ký và tự điền thông tin dự án.
         Bạn chỉ nhập mật khẩu, giải CAPTCHA, bấm Gửi, xác minh email, rồi bấm <b>"Đây là trang hồ sơ"</b> — URL được lưu và chuyển sang nền tảng kế tiếp.</p>
     </div>
@@ -41,6 +35,7 @@
   </div>
   <div class="runner-busy small flash info" hidden>Một lượt chạy khác đang chạy trên máy này. Dừng lượt đó trước khi chạy dự án này.</div>
 </section>
+</s:if>
 
 <div class="toolbar">
   <form method="get" action="<s:url action='platforms'/>" class="filters">
@@ -55,20 +50,27 @@
     </select>
   </form>
   <div class="tb-actions">
-    <a class="btn" href="<s:url action='platformPaste'><s:param name='projectId' value='project.id'/></s:url>">Dán danh sách</a>
-    <a class="btn primary" href="<s:url action='platformBatch'><s:param name='projectId' value='project.id'/><s:param name='mode' value="'auto'"/></s:url>" title="Lần lượt các mục không đánh dấu CAPTCHA">Tạo hàng loạt</a>
-    <a class="btn" href="<s:url action='platformBatch'><s:param name='projectId' value='project.id'/><s:param name='mode' value="'captcha'"/></s:url>" title="Lần lượt các mục cần CAPTCHA — xử lý thủ công">Hàng loạt mục CAPTCHA</a>
+    <a class="btn" href="<s:url action='platformPaste'><s:param name='projectId' value='project.id'/></s:url>">+ Thêm nền tảng</a>
+    <a class="btn" href="<s:url action='platformBatch'><s:param name='projectId' value='project.id'/></s:url>" title="Làm thủ công từng mục, không mở trình duyệt tự động">Làm thủ công</a>
   </div>
 </div>
 
 <s:if test="platforms.isEmpty()">
-  <div class="empty">
-    <h2><s:if test="total == 0">Chưa có nền tảng</s:if><s:else>Không có mục khớp bộ lọc</s:else></h2>
-    <s:if test="total == 0">
-      <p class="muted">Dán danh sách nền tảng (Social, Entity, Forum, Khác) để bắt đầu.</p>
-      <a class="btn primary" href="<s:url action='platformPaste'><s:param name='projectId' value='project.id'/></s:url>">Dán danh sách</a>
-    </s:if>
-  </div>
+  <s:if test="total == 0">
+  <section class="panel">
+    <h2>Dán danh sách nền tảng cần tạo profile</h2>
+    <p class="muted small">Mỗi dòng một nền tảng: <code>URL đăng ký</code> hoặc <code>Tên | Nhóm | URL</code> (Nhóm: Social, Entity, Forum, Khác — bỏ trống sẽ tự đoán). Thêm <code>| captcha</code> nếu trang có CAPTCHA.</p>
+    <form method="post" action="<s:url action='platformPasteSave'/>">
+      <input type="hidden" name="csrf" value="<s:property value='csrf'/>">
+      <input type="hidden" name="projectId" value="<s:property value='project.id'/>">
+      <textarea name="lines" rows="10" class="mono" placeholder="https://www.pinterest.com/business/create/
+Crunchbase | Entity | https://www.crunchbase.com/register
+Reddit | Forum | https://www.reddit.com/register | captcha"></textarea>
+      <div class="actions"><button class="btn primary" type="submit">Thêm vào danh sách</button></div>
+    </form>
+  </section>
+  </s:if>
+  <s:else><div class="empty"><h2>Không có mục khớp bộ lọc</h2></div></s:else>
 </s:if>
 <s:else>
 <form method="post" action="<s:url action='platformBulk'/>" id="bulkForm">

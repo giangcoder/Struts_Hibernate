@@ -8,6 +8,7 @@
     <constant name="struts.action.extension" value=","/>
     <constant name="struts.enable.DynamicMethodInvocation" value="false"/>
     <constant name="struts.allowlist.packageNames" value="vn.hosoweb.model,vn.hosoweb.web"/>
+    <constant name="struts.allowlist.classes" value="java.util.ArrayList,java.util.LinkedHashSet,java.util.HashSet,java.util.ImmutableCollections$ListN,java.util.ImmutableCollections$List12,java.util.Collections$EmptyList"/>
     <constant name="struts.ui.theme" value="simple"/>
 
     <package name="base" extends="struts-default" abstract="true">
@@ -55,7 +56,7 @@
         </action>
         <action name="doRegister" class="vn.hosoweb.web.AuthAction" method="register">
             <result name="input">/WEB-INF/jsp/register.jsp</result>
-            <result type="redirectAction">projectEdit</result>
+            <result type="redirectAction">projectNew</result>
         </action>
         <action name="logout" class="vn.hosoweb.web.AuthAction" method="logout">
             <result type="redirectAction">login</result>
@@ -70,11 +71,23 @@
         <action name="projects" class="vn.hosoweb.web.ProjectAction" method="list">
             <result>/WEB-INF/jsp/projects.jsp</result>
         </action>
+        <action name="projectNew" class="vn.hosoweb.web.ProjectAction" method="newForm">
+            <result name="input">/WEB-INF/jsp/project-new.jsp</result>
+        </action>
+        <action name="projectCreate" class="vn.hosoweb.web.ProjectAction" method="create">
+            <result name="input">/WEB-INF/jsp/project-new.jsp</result>
+            <result type="redirectAction">
+                <param name="actionName">projectEdit</param>
+                <param name="projectId">${projectId}</param>
+            </result>
+        </action>
         <action name="projectEdit" class="vn.hosoweb.web.ProjectAction" method="edit">
             <result name="input">/WEB-INF/jsp/project-edit.jsp</result>
+            <result name="new" type="redirectAction">projectNew</result>
         </action>
         <action name="projectSave" class="vn.hosoweb.web.ProjectAction" method="save">
             <result name="input">/WEB-INF/jsp/project-edit.jsp</result>
+            <result name="new" type="redirectAction">projectNew</result>
             <result type="redirectAction">
                 <param name="actionName">platforms</param>
                 <param name="projectId">${projectId}</param>

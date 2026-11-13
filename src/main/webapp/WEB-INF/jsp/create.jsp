@@ -112,7 +112,7 @@
         </select></label>
       <div id="socialBox" class="social-box">
         <s:if test="socialLinks.isEmpty()">
-          <p class="muted small">Chưa có liên kết social. Thêm ở tab <a href="<s:url action='socialLinks'><s:param name='projectId' value='project.id'/></s:url>">Liên kết social</a>.</p>
+          <p class="muted small">Chưa có liên kết. Thêm ở bước <a href="<s:url action='projectEdit'><s:param name='projectId' value='project.id'/></s:url>">Hồ sơ → Liên kết</a>.</p>
         </s:if>
         <s:iterator value="socialLinks" var="sl">
           <label class="check"><input type="checkbox" name="linkIds" value="<s:property value='#sl.id'/>" <s:if test="isLinkAttached(#sl.id)">checked</s:if>>

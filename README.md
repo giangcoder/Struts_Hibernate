@@ -50,37 +50,21 @@ Không ghi khóa vào mã nguồn hay commit lên git.
 | `HOSOWEB_BROWSER_PROFILE` | Thư mục hồ sơ trình duyệt của bộ chạy, mặc định `data/browser-profile`. |
 | `SINBYTE_MOCK=true` | Trả phản hồi mô phỏng, không gọi Sinbyte thật (dùng để thử). |
 
-## Cách dùng
+## Cách dùng — 4 bước
 
-1. **Tạo dự án**: tên thương hiệu, website, logo, ảnh cover, tiêu đề, mô tả ngắn / đầy đủ, từ khóa SEO, hashtag,
-   ba username theo thứ tự ưu tiên. Thị trường / ngôn ngữ mặc định **Việt Nam · Tiếng Việt**.
-   Thông tin theo dự án: Gmail riêng và trạng thái kết nối, người quản lý, ngày sinh, số nhận SMS, người xử lý mã,
-   ngành nghề, quy mô, loại hình; email / số điện thoại công khai, địa chỉ, giờ hoạt động, Google Maps.
-2. **Danh sách → Dán danh sách**: mỗi dòng `Tên`, `URL` hoặc `Tên | Nhóm | URL` (Tab cũng được).
-   Nhóm bỏ trống sẽ tự đoán theo tên miền. Dòng trùng bị bỏ qua. Tích **hồ sơ đang sở hữu** để lưu URL vào
-   *Link hồ sơ hiện có* kèm trạng thái quyền quản trị. Mỗi dòng hiện lý do nếu thiếu dữ liệu (thiếu URL đăng ký, chưa có username, …).
-3. **CAPTCHA (làm thủ công):** đánh dấu nền tảng cần CAPTCHA bằng `| captcha` cuối dòng khi dán, ô tích khi dán,
-   thao tác hàng loạt trên bảng, hoặc ô tích trong màn hình Tạo. **Tạo hàng loạt** chỉ đi qua mục *không* CAPTCHA;
-   **Hàng loạt mục CAPTCHA** đi qua các mục đã đánh dấu để bạn xử lý thủ công.
-4. **⚡ Tự điền:** trên màn hình Tạo, kéo nút *Tự điền* lên thanh dấu trang (một lần cho mỗi dự án). Trên trang đăng ký của nền tảng,
-   bấm dấu trang đó để điền email, username, họ tên, tên thương hiệu, website, điện thoại, mô tả… Một khung nhỏ cho đổi
-   username ưu tiên 1/2/3. Script **không** điền mật khẩu, **không** đụng ô CAPTCHA / mã xác minh và **không** tự bấm gửi.
-5. **▶ Chạy tự động trên trình duyệt** (tab Danh sách): ứng dụng mở Chrome trên máy đang chạy nó, lần lượt vào trang đăng ký
-   của từng nền tảng còn cần xử lý và tự điền thông tin dự án. Một khung điều khiển ở góc phải trên mỗi trang:
-   **✅ Đây là trang hồ sơ** (lưu URL hiện tại + username, đánh dấu Hoàn tất, sang nền tảng kế tiếp), **⚡ Tự điền lại**,
-   **⏳ Chờ xác minh**, **🧩 Chờ CAPTCHA**, **⏭ Bỏ qua** (hoặc đóng tab), **⛔ Dừng**. Tiến độ và nhật ký hiện trên tab Danh sách.
-   Bạn chỉ nhập mật khẩu, giải CAPTCHA, bấm Gửi và xác minh email. Hồ sơ trình duyệt lưu ở `data/browser-profile`
-   nên đăng nhập Google / các trang được giữ cho lần sau. Dùng Google Chrome nếu máy có, nếu không tự tải Chromium.
-   Chỉ hoạt động khi ứng dụng chạy trên chính máy của bạn.
-6. **Tạo** (từng dòng) hoặc **Tạo hàng loạt** (lần lượt các mục *Chưa tạo / Đang xử lý / Chờ xác minh / Chờ CAPTCHA*):
-   màn hình hiển thị nội dung đã lưu với nút **Sao chép**, username theo thứ tự (nút **Dùng**), logo, cover, Gmail / SMS,
-   và nút mở trang đăng ký. Người dùng tự điền, gửi và xác minh trên trang của nền tảng.
-7. Lưu username thực tế, URL hồ sơ, trạng thái, bước cần làm, ghi chú. **Hoàn tất chỉ được chọn khi có URL hồ sơ thực tế**
-   (kiểm tra cả ở máy chủ). Lưu lại một mục đã hoàn tất không đổi thời điểm hoàn tất.
-8. **Liên kết social**: lưu các URL social; khi cập nhật nền tảng chọn **Có hỗ trợ** và đánh dấu link đã gắn → xuất trong CSV.
-9. **Kết quả**: bảng hồ sơ hoàn tất, **Tải CSV kết quả** và **Tải CSV tiến độ** (UTF-8 có BOM, mở thẳng bằng Excel).
-10. **Submit index**: xem trước URL hoàn tất chưa gửi (tối đa 100 / lượt), chọn và gửi. Kết quả ghi trạng thái
-   *Đã gửi Sinbyte* / *Gửi lỗi* cùng mã tác vụ nếu Sinbyte trả về. Đổi URL hồ sơ sẽ đặt lại trạng thái gửi.
+1. **Dự án**: chỉ nhập **Tên** và **Website**. Ứng dụng tự gợi ý 3 username từ tên miền / tên thương hiệu.
+2. **Hồ sơ**: logo, banner, tiêu đề, mô tả ngắn / đầy đủ, từ khóa, hashtag, username, **liên kết** (mỗi dòng một URL),
+   liên hệ. Phần *Thông tin đăng ký* (Gmail đăng ký, SMS, ngày sinh, ngành nghề…) nằm trong mục thu gọn.
+3. **Tạo profile**: dán danh sách nền tảng (mỗi dòng `URL đăng ký` hoặc `Tên | Nhóm | URL`, thêm `| captcha` nếu có CAPTCHA),
+   rồi bấm **▶ Chạy**. Ứng dụng mở Chrome trên máy, lần lượt vào từng trang đăng ký và tự điền thông tin. Khung điều khiển
+   góc phải trên: **✅ Đây là trang hồ sơ** (lưu URL + username, Hoàn tất, sang trang kế tiếp), **⚡ Tự điền lại**,
+   **⏳ Chờ xác minh**, **🧩 Chờ CAPTCHA**, **⏭ Bỏ qua** (hoặc đóng tab), **⛔ Dừng**. Bạn chỉ nhập mật khẩu, giải CAPTCHA,
+   bấm Gửi, xác minh email. Hồ sơ trình duyệt lưu ở `data/browser-profile` nên các đăng nhập được giữ.
+   Nút **Làm thủ công** cho phép xử lý từng mục không qua trình duyệt tự động (sao chép nội dung, nút ⚡ Tự điền dạng dấu trang).
+4. **Kết quả**: danh sách profile hoàn thành (URL, username, thời điểm), **Tải CSV kết quả / tiến độ**, **Submit index** qua Sinbyte
+   (tối đa 100 URL / lượt, ghi trạng thái và mã tác vụ).
+
+Chỉ đánh dấu Hoàn tất khi có URL hồ sơ thực tế; chạy lại không tạo trùng các mục đã hoàn tất.
 
 ## Bảo mật
 
