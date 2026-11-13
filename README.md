@@ -9,8 +9,11 @@ nên mở được cùng dự án từ mọi trình duyệt.
 
 ## Chạy
 
+Chỉ cần **Java 17+** (không cần cài Maven — `./mvnw` tự tải). Kiểm tra: `java -version`.
+macOS chưa có Java: `brew install openjdk@21` hoặc tải bản Temurin tại adoptium.net.
+
 ```bash
-mvn jetty:run
+./mvnw jetty:run
 ```
 
 Mở http://localhost:8080 → **Đăng ký** tài khoản → **Tạo dự án**.
@@ -18,19 +21,19 @@ Mở http://localhost:8080 → **Đăng ký** tài khoản → **Tạo dự án*
 Đóng gói WAR để chạy trên Tomcat 10.1+ / Jetty 12 (Jakarta EE 10):
 
 ```bash
-mvn package    # → target/ho-so-web.war
+./mvnw package    # → target/ho-so-web.war
 ```
 
 Chạy với khóa Sinbyte thật (macOS / Linux):
 
 ```bash
-SINBYTE_API_KEY='khóa-của-bạn' mvn jetty:run
+SINBYTE_API_KEY='khóa-của-bạn' ./mvnw jetty:run
 ```
 
 Windows PowerShell:
 
 ```powershell
-$env:SINBYTE_API_KEY='khóa-của-bạn'; mvn jetty:run
+$env:SINBYTE_API_KEY='khóa-của-bạn'; .\mvnw.cmd jetty:run
 ```
 
 Không ghi khóa vào mã nguồn hay commit lên git.
@@ -78,7 +81,7 @@ chỉ nhận URL `http(s)`; HTML được escape; ô CSV bắt đầu bằng `= 
 ## Kiểm thử
 
 ```bash
-mvn test
+./mvnw test
 ```
 
 ## Trạng thái so với hồ sơ bàn giao
