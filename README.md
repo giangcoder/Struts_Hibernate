@@ -21,6 +21,20 @@ Mở http://localhost:8080 → **Đăng ký** tài khoản → **Tạo dự án*
 mvn package    # → target/ho-so-web.war
 ```
 
+Chạy với khóa Sinbyte thật (macOS / Linux):
+
+```bash
+SINBYTE_API_KEY='khóa-của-bạn' mvn jetty:run
+```
+
+Windows PowerShell:
+
+```powershell
+$env:SINBYTE_API_KEY='khóa-của-bạn'; mvn jetty:run
+```
+
+Không ghi khóa vào mã nguồn hay commit lên git.
+
 ### Biến môi trường
 
 | Biến | Ý nghĩa |
@@ -40,14 +54,20 @@ mvn package    # → target/ho-so-web.war
 2. **Danh sách → Dán danh sách**: mỗi dòng `Tên`, `URL` hoặc `Tên | Nhóm | URL` (Tab cũng được).
    Nhóm bỏ trống sẽ tự đoán theo tên miền. Dòng trùng bị bỏ qua. Tích **hồ sơ đang sở hữu** để lưu URL vào
    *Link hồ sơ hiện có* kèm trạng thái quyền quản trị. Mỗi dòng hiện lý do nếu thiếu dữ liệu (thiếu URL đăng ký, chưa có username, …).
-3. **Tạo** (từng dòng) hoặc **Tạo hàng loạt** (lần lượt các mục *Chưa tạo / Đang xử lý / Chờ xác minh / Chờ CAPTCHA*):
+3. **CAPTCHA (làm thủ công):** đánh dấu nền tảng cần CAPTCHA bằng `| captcha` cuối dòng khi dán, ô tích khi dán,
+   thao tác hàng loạt trên bảng, hoặc ô tích trong màn hình Tạo. **Tạo hàng loạt** chỉ đi qua mục *không* CAPTCHA;
+   **Hàng loạt mục CAPTCHA** đi qua các mục đã đánh dấu để bạn xử lý thủ công.
+4. **⚡ Tự điền:** trên màn hình Tạo, kéo nút *Tự điền* lên thanh dấu trang (một lần cho mỗi dự án). Trên trang đăng ký của nền tảng,
+   bấm dấu trang đó để điền email, username, họ tên, tên thương hiệu, website, điện thoại, mô tả… Một khung nhỏ cho đổi
+   username ưu tiên 1/2/3. Script **không** điền mật khẩu, **không** đụng ô CAPTCHA / mã xác minh và **không** tự bấm gửi.
+5. **Tạo** (từng dòng) hoặc **Tạo hàng loạt** (lần lượt các mục *Chưa tạo / Đang xử lý / Chờ xác minh / Chờ CAPTCHA*):
    màn hình hiển thị nội dung đã lưu với nút **Sao chép**, username theo thứ tự (nút **Dùng**), logo, cover, Gmail / SMS,
    và nút mở trang đăng ký. Người dùng tự điền, gửi và xác minh trên trang của nền tảng.
-4. Lưu username thực tế, URL hồ sơ, trạng thái, bước cần làm, ghi chú. **Hoàn tất chỉ được chọn khi có URL hồ sơ thực tế**
+6. Lưu username thực tế, URL hồ sơ, trạng thái, bước cần làm, ghi chú. **Hoàn tất chỉ được chọn khi có URL hồ sơ thực tế**
    (kiểm tra cả ở máy chủ). Lưu lại một mục đã hoàn tất không đổi thời điểm hoàn tất.
-5. **Liên kết social**: lưu các URL social; khi cập nhật nền tảng chọn **Có hỗ trợ** và đánh dấu link đã gắn → xuất trong CSV.
-6. **Kết quả**: bảng hồ sơ hoàn tất, **Tải CSV kết quả** và **Tải CSV tiến độ** (UTF-8 có BOM, mở thẳng bằng Excel).
-7. **Submit index**: xem trước URL hoàn tất chưa gửi (tối đa 100 / lượt), chọn và gửi. Kết quả ghi trạng thái
+7. **Liên kết social**: lưu các URL social; khi cập nhật nền tảng chọn **Có hỗ trợ** và đánh dấu link đã gắn → xuất trong CSV.
+8. **Kết quả**: bảng hồ sơ hoàn tất, **Tải CSV kết quả** và **Tải CSV tiến độ** (UTF-8 có BOM, mở thẳng bằng Excel).
+9. **Submit index**: xem trước URL hoàn tất chưa gửi (tối đa 100 / lượt), chọn và gửi. Kết quả ghi trạng thái
    *Đã gửi Sinbyte* / *Gửi lỗi* cùng mã tác vụ nếu Sinbyte trả về. Đổi URL hồ sơ sẽ đặt lại trạng thái gửi.
 
 ## Bảo mật

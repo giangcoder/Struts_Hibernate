@@ -124,6 +124,7 @@
                 <param name="actionName">platformBatch</param>
                 <param name="projectId">${projectId}</param>
                 <param name="afterId">${afterId}</param>
+                <param name="mode">${mode}</param>
             </result>
         </action>
         <action name="platformDelete" class="vn.hosoweb.web.PlatformAction" method="delete">

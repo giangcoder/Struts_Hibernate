@@ -20,7 +20,7 @@ class PlatformParserTest {
         assertTrue(r.errors().isEmpty(), r.errors().toString());
         var e = r.entries();
         assertEquals(6, e.size());
-        assertEquals(new PlatformParser.Entry("Facebook", "Social", "https://www.facebook.com/pages/create", 1), e.get(0));
+        assertEquals(new PlatformParser.Entry("Facebook", "Social", "https://www.facebook.com/pages/create", false, 1), e.get(0));
         assertEquals("Reddit", e.get(1).name());
         assertEquals("Forum", e.get(1).group());
         assertEquals("Crunchbase", e.get(2).name());
@@ -29,6 +29,15 @@ class PlatformParserTest {
         assertEquals("Forum", e.get(3).group());
         assertEquals("Social", e.get(4).group());
         assertEquals("Entity", e.get(5).group());
+    }
+
+    @Test
+    void captchaMarker() {
+        var e = PlatformParser.parse("Reddit | Forum | https://reddit.com/register | captcha\nQuora | cần CAPTCHA").entries();
+        assertTrue(e.get(0).captcha());
+        assertEquals("Forum", e.get(0).group());
+        assertTrue(e.get(1).captcha());
+        assertEquals("Quora", e.get(1).name());
     }
 
     @Test

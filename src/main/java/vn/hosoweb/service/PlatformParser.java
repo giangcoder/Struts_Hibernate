@@ -10,11 +10,12 @@ import java.util.*;
  *   <li>{@code Tên}</li>
  *   <li>{@code URL}</li>
  *   <li>{@code Tên | URL}, {@code Tên | Nhóm} hoặc {@code Tên | Nhóm | URL} (chấp nhận cả Tab thay cho |)</li>
+ *   <li>thêm phần {@code captcha} ở bất kỳ vị trí nào để đánh dấu nền tảng cần CAPTCHA (làm thủ công)</li>
  * </ul>
  */
 public final class PlatformParser {
 
-    public record Entry(String name, String group, String url, int lineNo) { }
+    public record Entry(String name, String group, String url, boolean captcha, int lineNo) { }
     public record Result(List<Entry> entries, List<String> errors) { }
 
     private static final Map<String, String> KNOWN = new LinkedHashMap<>();
@@ -46,9 +47,11 @@ public final class PlatformParser {
             int no = i + 1;
             String[] parts = line.split("\\s*[|\\t]\\s*", -1);
             String name = null, group = null, url = null;
+            boolean captcha = false;
             for (String raw : parts) {
                 String p = raw.trim();
                 if (p.isEmpty()) continue;
+                if (p.toLowerCase(Locale.ROOT).matches("(cần |can )?captcha")) { captcha = true; continue; }
                 String asUrl = Urls.normalize(p);
                 if (url == null && Urls.isHttpUrl(asUrl) && !p.contains(" ")) { url = asUrl; continue; }
                 String g = normalizeGroup(p);
@@ -61,7 +64,7 @@ public final class PlatformParser {
             if (name == null) name = nameFromUrl(url);
             if (name.length() > 200) { errors.add("Dòng " + no + ": tên quá dài"); continue; }
             if (group == null) group = guessGroup(url, name);
-            out.add(new Entry(name, group, url, no));
+            out.add(new Entry(name, group, url, captcha, no));
         }
         return new Result(out, errors);
     }

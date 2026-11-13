@@ -31,6 +31,8 @@ public class PlatformAction extends ProjectScopedAction {
     private Platform platform;
     private List<SocialLink> socialLinks = List.of();
     private boolean batch;
+    private String mode;
+    private boolean markCaptcha;
     private Long afterId;
     private int batchIndex, batchTotal;
     private final Platform f = new Platform();
@@ -81,6 +83,7 @@ public class PlatformAction extends ProjectScopedAction {
                 } else {
                     p.setSignupUrl(e.url());
                 }
+                p.setCaptchaManual(e.captcha() || markCaptcha);
                 p.setPosition(pos++);
                 s.persist(p);
                 added[0]++;
@@ -112,6 +115,9 @@ public class PlatformAction extends ProjectScopedAction {
                 Platform p = Repo.platform(s, uid(), pid);
                 if (p == null || !p.getProject().getId().equals(project.getId())) continue;
                 if ("__delete".equals(bulkStatus)) { s.remove(p); c++; continue; }
+                if ("__captcha_on".equals(bulkStatus) || "__captcha_off".equals(bulkStatus)) {
+                    p.setCaptchaManual("__captcha_on".equals(bulkStatus)); p.touch(); c++; continue;
+                }
                 if (!Platform.STATUSES.contains(bulkStatus)) continue;
                 if (Platform.ST_DONE.equals(bulkStatus) && !Urls.isHttpUrl(p.getProfileUrl())) continue; // chỉ hoàn tất khi có URL thật
                 p.setStatus(bulkStatus);
@@ -164,9 +170,50 @@ public class PlatformAction extends ProjectScopedAction {
         return HibernateUtil.tx(this::loadView) ? INPUT : "notfound";
     }
 
+    /** Mục còn cần xử lý, lọc theo chế độ hàng loạt: "auto" = không CAPTCHA, "captcha" = cần CAPTCHA. */
     private List<Platform> pending(Session s) {
-        return s.createQuery("from Platform where project.id = :p and status in (:st) order by position, id", Platform.class)
+        List<Platform> l = s.createQuery("from Platform where project.id = :p and status in (:st) order by position, id", Platform.class)
                 .setParameter("p", project.getId()).setParameterList("st", Platform.PENDING).list();
+        if (MODE_AUTO.equals(mode)) l.removeIf(Platform::isCaptchaManual);
+        else if (MODE_CAPTCHA.equals(mode)) l.removeIf(p -> !p.isCaptchaManual());
+        return l;
+    }
+
+    public static final String MODE_AUTO = "auto";
+    public static final String MODE_CAPTCHA = "captcha";
+
+    public String getModeLabel() {
+        if (MODE_AUTO.equals(mode)) return "mục không CAPTCHA";
+        if (MODE_CAPTCHA.equals(mode)) return "mục cần CAPTCHA, làm thủ công";
+        return "mọi mục";
+    }
+
+    /** Dữ liệu cho nút "Tự điền" (bookmarklet) — chỉ thông tin của dự án hiện tại. */
+    public String getAutofillJson() {
+        Project p = project;
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("brand", p.getBrandName());
+        m.put("website", p.getWebsite());
+        m.put("title", p.getTitle());
+        m.put("short", p.getShortDescription());
+        m.put("full", p.getFullDescription());
+        m.put("keywords", p.getSeoKeywords());
+        m.put("hashtags", p.getHashtags());
+        m.put("usernames", p.getUsernames());
+        m.put("email", p.getGmail() != null ? p.getGmail() : p.getPublicEmail());
+        m.put("publicEmail", p.getPublicEmail());
+        m.put("phone", p.getSmsPhone() != null ? p.getSmsPhone() : p.getPublicPhone());
+        m.put("publicPhone", p.getPublicPhone());
+        m.put("address", p.getAddress());
+        m.put("birthDate", p.getBirthDate());
+        m.put("manager", p.getManager());
+        m.put("industry", p.getIndustry());
+        m.put("hours", p.getOpeningHours());
+        try {
+            return new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(m);
+        } catch (Exception e) {
+            return "{}";
+        }
     }
 
     private static int indexOf(List<Platform> l, Long pid) {
@@ -212,6 +259,7 @@ public class PlatformAction extends ProjectScopedAction {
             platform.setProfileUrl(f.getProfileUrl()); platform.setNote(f.getNote());
             platform.setPendingStep(f.getPendingStep()); platform.setSocialSupport(f.getSocialSupport());
             platform.setStatus(status); platform.setAttachedLinkIdSet(linkIds);
+            platform.setCaptchaManual(f.isCaptchaManual());
             return INPUT;
         }
         final String pu = profileUrl;
@@ -228,6 +276,7 @@ public class PlatformAction extends ProjectScopedAction {
             p.setProfileUrl(pu);
             p.setNote(trim(f.getNote()));
             p.setPendingStep(trim(f.getPendingStep()));
+            p.setCaptchaManual(f.isCaptchaManual());
             p.setSocialSupport(Platform.SOCIAL_SUPPORT.contains(f.getSocialSupport()) ? f.getSocialSupport() : "Chưa rõ");
             if ("Có hỗ trợ".equals(p.getSocialSupport())) {
                 Set<Long> valid = new HashSet<>();
@@ -290,6 +339,9 @@ public class PlatformAction extends ProjectScopedAction {
     @StrutsParameter public void setId(Long v) { id = v; }
     public Platform getPlatform() { return platform; }
     public List<SocialLink> getSocialLinks() { return socialLinks; }
+    public String getMode() { return mode; }
+    @StrutsParameter public void setMode(String v) { mode = MODE_AUTO.equals(v) || MODE_CAPTCHA.equals(v) ? v : null; }
+    @StrutsParameter public void setMarkCaptcha(boolean v) { markCaptcha = v; }
     public boolean isBatch() { return batch; }
     @StrutsParameter public void setBatch(boolean v) { batch = v; }
     public Long getAfterId() { return afterId; }

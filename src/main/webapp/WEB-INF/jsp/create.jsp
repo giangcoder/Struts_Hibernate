@@ -4,9 +4,9 @@
 
 <s:if test="batch">
   <div class="batch-bar">
-    <span>Tạo hàng loạt · mục <b><s:property value="batchIndex"/></b> / <s:property value="batchTotal"/> còn cần xử lý</span>
+    <span>Tạo hàng loạt (<s:property value="modeLabel"/>) · mục <b><s:property value="batchIndex"/></b> / <s:property value="batchTotal"/> còn cần xử lý</span>
     <span>
-      <a class="btn sm" href="<s:url action='platformBatch'><s:param name='projectId' value='project.id'/><s:param name='afterId' value='platform.id'/></s:url>">Bỏ qua lượt này →</a>
+      <a class="btn sm" href="<s:url action='platformBatch'><s:param name='projectId' value='project.id'/><s:param name='afterId' value='platform.id'/><s:param name='mode' value='mode'/></s:url>">Bỏ qua lượt này →</a>
       <a class="btn sm" href="<s:url action='platforms'><s:param name='projectId' value='project.id'/></s:url>">Dừng</a>
     </span>
   </div>
@@ -27,6 +27,15 @@
         <a class="btn primary" href="<s:property value='platform.signupUrl'/>" target="_blank" rel="noopener noreferrer">Mở trang đăng ký ↗</a>
       </s:elseif>
     </div>
+    <div class="autofill">
+      <a class="btn bookmarklet" id="autofillLink" href="#" data-autofill="<s:property value='autofillJson'/>"
+         title="Kéo nút này lên thanh dấu trang">⚡ Tự điền <s:property value="project.brandName"/></a>
+      <div class="small muted">
+        <b>Tự điền:</b> kéo nút bên trái lên thanh dấu trang (một lần cho mỗi dự án). Trên trang đăng ký, bấm dấu trang đó để điền
+        email, username, tên, website, mô tả… Mật khẩu và CAPTCHA không được điền — bạn tự nhập, kiểm tra rồi bấm Gửi.
+      </div>
+    </div>
+    <s:if test="platform.captchaManual"><div class="flash info">Nền tảng có CAPTCHA: tự điền, giải CAPTCHA thủ công, rồi đặt trạng thái hoặc ghi "bước cần làm".</div></s:if>
     <s:if test="platform.done"><div class="flash ok">Mục này đã hoàn tất — không cần tạo lại. Chỉ sửa khi thông tin thay đổi.</div></s:if>
     <s:if test="platform.ownedProfile"><div class="flash info">Đây là hồ sơ đang sở hữu (<s:property value="platform.adminStatus"/>). Cập nhật nội dung thay vì tạo mới.</div></s:if>
     <s:elseif test="platform.signupUrl == null"><div class="flash err">Thiếu URL đăng ký — bổ sung ở phần "Thông tin nền tảng" bên phải.</div></s:elseif>
@@ -80,13 +89,15 @@
     <form method="post" action="<s:url action='platformSave'/>">
       <input type="hidden" name="csrf" value="<s:property value='csrf'/>">
       <input type="hidden" name="id" value="<s:property value='platform.id'/>">
-      <s:if test="batch"><input type="hidden" name="batch" value="true"></s:if>
+      <s:if test="batch"><input type="hidden" name="batch" value="true"><input type="hidden" name="mode" value="<s:property value='mode'/>"></s:if>
 
       <h3>Kết quả</h3>
       <label>Trạng thái
         <select name="f.status" id="statusSel">
           <s:iterator value="statuses"><option <s:if test="top == platform.status">selected</s:if>><s:property/></option></s:iterator>
         </select></label>
+      <label class="check"><input type="checkbox" name="f.captchaManual" value="true" <s:if test="platform.captchaManual">checked</s:if>>
+        Nền tảng này cần CAPTCHA — tôi xử lý thủ công</label>
       <label>Username thực tế<input name="f.username" value="<s:property value='platform.username'/>" maxlength="100"></label>
       <label>URL hồ sơ thực tế<input name="f.profileUrl" value="<s:property value='platform.profileUrl'/>" placeholder="https://" maxlength="1000">
         <s:fielderror fieldName="f.profileUrl" cssClass="ferr"/></label>

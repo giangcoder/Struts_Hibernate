@@ -23,7 +23,8 @@
   </form>
   <div class="tb-actions">
     <a class="btn" href="<s:url action='platformPaste'><s:param name='projectId' value='project.id'/></s:url>">Dán danh sách</a>
-    <a class="btn primary" href="<s:url action='platformBatch'><s:param name='projectId' value='project.id'/></s:url>">Tạo hàng loạt</a>
+    <a class="btn primary" href="<s:url action='platformBatch'><s:param name='projectId' value='project.id'/><s:param name='mode' value="'auto'"/></s:url>" title="Lần lượt các mục không đánh dấu CAPTCHA">Tạo hàng loạt</a>
+    <a class="btn" href="<s:url action='platformBatch'><s:param name='projectId' value='project.id'/><s:param name='mode' value="'captcha'"/></s:url>" title="Lần lượt các mục cần CAPTCHA — xử lý thủ công">Hàng loạt mục CAPTCHA</a>
   </div>
 </div>
 
@@ -52,6 +53,7 @@
         <td class="w-check"><input type="checkbox" name="ids" value="<s:property value='#pl.id'/>"></td>
         <td>
           <b><s:property value="#pl.name"/></b>
+          <s:if test="#pl.captchaManual"><span class="badge wait" title="Cần CAPTCHA — làm thủ công">CAPTCHA</span></s:if>
           <div class="small muted ellipsis">
             <s:if test="#pl.ownedProfile">Hồ sơ hiện có · <s:property value="#pl.adminStatus"/></s:if>
             <s:elseif test="#pl.signupUrl != null"><a href="<s:property value='#pl.signupUrl'/>" target="_blank" rel="noopener noreferrer"><s:property value="#pl.signupUrl"/></a></s:elseif>
@@ -79,6 +81,8 @@
     <span class="small muted">Với các dòng đã chọn:</span>
     <select name="bulkStatus">
       <s:iterator value="statuses"><option><s:property/></option></s:iterator>
+      <option value="__captcha_on">Đánh dấu cần CAPTCHA (thủ công)</option>
+      <option value="__captcha_off">Bỏ đánh dấu CAPTCHA</option>
       <option value="__delete">— Xóa khỏi danh sách —</option>
     </select>
     <button class="btn sm" type="submit" data-confirm-if-delete="Xóa các nền tảng đã chọn?">Áp dụng</button>

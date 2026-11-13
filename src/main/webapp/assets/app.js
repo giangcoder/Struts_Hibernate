@@ -69,3 +69,19 @@
     sel.addEventListener('change', upd); upd();
   }
 })();
+
+// Tạo nút "Tự điền" (bookmarklet) từ dữ liệu dự án
+(function () {
+  var a = document.getElementById('autofillLink');
+  if (!a) return;
+  var data = a.getAttribute('data-autofill');
+  fetch(a.ownerDocument.querySelector('script[src*="app.js"]').src.replace('app.js', 'autofill.js'))
+    .then(function (r) { return r.text(); })
+    .then(function (code) {
+      a.href = 'javascript:' + encodeURIComponent('(' + code.trim() + ')(' + data + ');void 0');
+    });
+  a.addEventListener('click', function (e) {
+    e.preventDefault();
+    alert('Kéo nút này lên thanh dấu trang, rồi bấm nó trên trang đăng ký của nền tảng.');
+  });
+})();

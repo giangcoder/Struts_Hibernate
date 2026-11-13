@@ -53,6 +53,9 @@ public class Platform {
     @Column(length = 100) private String sinbyteTaskId;
     private LocalDateTime sinbyteSentAt;
 
+    /** Người dùng đánh dấu nền tảng có CAPTCHA — xử lý thủ công. */
+    private Boolean captchaManual;
+
     private int position;
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
@@ -129,6 +132,8 @@ public class Platform {
     public void setCompletedAt(LocalDateTime v) { completedAt = v; }
     public String getNote() { return note; }
     public void setNote(String v) { note = v; }
+    public boolean isCaptchaManual() { return Boolean.TRUE.equals(captchaManual); }
+    public void setCaptchaManual(boolean v) { captchaManual = v; }
     public String getPendingStep() { return pendingStep; }
     public void setPendingStep(String v) { pendingStep = v; }
     public String getSocialSupport() { return socialSupport; }
