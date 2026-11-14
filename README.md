@@ -7,6 +7,20 @@ trạng thái và CSV. Có gửi URL lập chỉ mục qua Sinbyte.
 **Công nghệ:** Java 17+, Struts 7, Hibernate 6, H2 (mặc định), JSP. Dữ liệu lưu trên máy chủ theo **tài khoản**,
 nên mở được cùng dự án từ mọi trình duyệt.
 
+## Cài trên macOS (M1/M2/M3/M4 hoặc Intel) — một lệnh
+
+Mở **Terminal** và dán:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/giangcoder/Struts_Hibernate/claude/elegant-newton-f3vd74/scripts/install-mac.sh | bash
+```
+
+Script tự cài Java 21 nếu máy chưa có (hỏi mật khẩu Mac), tải ứng dụng vào `~/HoSoWeb`, hỏi khóa Sinbyte
+(lưu ở `~/.hosoweb/sinbyte_key`, chỉ tài khoản Mac của bạn đọc được), và tạo lối tắt **Hồ sơ Web** trên Desktop.
+Bấm đúp lối tắt để chạy; trình duyệt tự mở http://localhost:8080. Chạy lại lệnh trên để cập nhật (dữ liệu được giữ).
+
+Mỗi máy có dữ liệu riêng (`~/HoSoWeb/data`). Muốn chuyển dữ liệu sang máy khác: tắt ứng dụng ở cả hai máy rồi chép thư mục `data`.
+
 ## Chạy
 
 Chỉ cần **Java 17+** (không cần cài Maven — `./mvnw` tự tải). Kiểm tra: `java -version`.
