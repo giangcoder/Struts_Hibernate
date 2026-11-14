@@ -20,7 +20,7 @@ public final class HibernateUtil {
         if (env != null && !env.isBlank()) return env;
         String prop = System.getProperty("hosoweb.db.url");
         if (prop != null && !prop.isBlank()) return prop;
-        return "jdbc:h2:file:./data/hosoweb;AUTO_SERVER=TRUE";
+        return "jdbc:h2:file:./data/hosoweb";
     }
 
     public static SessionFactory factory() {

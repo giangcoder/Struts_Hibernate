@@ -76,11 +76,18 @@ Không ghi khóa vào mã nguồn hay commit lên git.
    bấm Gửi, xác minh email. Hồ sơ trình duyệt lưu ở `data/browser-profile` nên các đăng nhập được giữ.
    Nút **Làm thủ công** cho phép xử lý từng mục không qua trình duyệt tự động (sao chép nội dung, nút ⚡ Tự điền dạng dấu trang).
 4. **Kết quả**: danh sách profile hoàn thành (URL, username, thời điểm), **Tải CSV kết quả / tiến độ**, **Submit index** qua Sinbyte
-   (tối đa 100 URL / lượt, ghi trạng thái và mã tác vụ).
+   (tối đa 100 URL / lượt, `dripfeed` 1 ngày, ghi trạng thái và mã tác vụ) và **Kiểm tra index** — hỏi Sinbyte từng URL đã được
+   Google index chưa (chỉ đọc, không tốn credit).
 
 Chỉ đánh dấu Hoàn tất khi có URL hồ sơ thực tế; chạy lại không tạo trùng các mục đã hoàn tất.
 
-## Bảo mật
+## Bảo mật & dữ liệu
+
+- Ứng dụng chỉ nghe ở `127.0.0.1:8080` — máy khác trong mạng (Wi-Fi) không truy cập được.
+- Khung điều khiển trong Chrome dùng mã bí mật theo từng lượt chạy; trang web bên ngoài không giả được lệnh "Hoàn tất / Dừng".
+- Lối tắt **Hồ sơ Web** tự sao lưu `data/hosoweb.mv.db` vào `data/backup/` mỗi lần mở (giữ 10 bản gần nhất).
+  Khôi phục: tắt ứng dụng, chép bản sao lưu đè lên `data/hosoweb.mv.db`.
+- Chưa có chức năng quên mật khẩu: hãy ghi nhớ mật khẩu tài khoản quản trị.
 
 Mật khẩu băm bằng BCrypt; chống session fixation khi đăng nhập; mọi POST yêu cầu token CSRF; mọi truy vấn lọc theo chủ sở hữu;
 chỉ nhận URL `http(s)`; HTML được escape; ô CSV bắt đầu bằng `= + - @` được vô hiệu hóa công thức.

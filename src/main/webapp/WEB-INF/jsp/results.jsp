@@ -6,6 +6,11 @@
   <div class="tb-actions">
     <a class="btn" href="<s:url action='csvProgress'><s:param name='projectId' value='project.id'/></s:url>">Tải CSV tiến độ</a>
     <a class="btn" href="<s:url action='csvResults'><s:param name='projectId' value='project.id'/></s:url>">Tải CSV kết quả</a>
+    <form method="post" action="<s:url action='sinbyteCheck'/>" class="inline">
+      <input type="hidden" name="csrf" value="<s:property value='csrf'/>">
+      <input type="hidden" name="projectId" value="<s:property value='project.id'/>">
+      <button class="btn" type="submit" title="Hỏi Sinbyte URL nào đã được Google index — không tốn credit">Kiểm tra index</button>
+    </form>
     <a class="btn primary" href="<s:url action='sinbyte'><s:param name='projectId' value='project.id'/></s:url>">Submit index</a>
   </div>
 </div>
@@ -31,6 +36,8 @@
           <s:if test="#pl.sinbyteStatus != null">
             <span class="badge <s:if test="#pl.sinbyteStatus == 'Đã gửi Sinbyte'">ok</s:if><s:else>err</s:else>"><s:property value="#pl.sinbyteStatus"/></span>
             <s:if test="#pl.sinbyteTaskId != null"><div class="muted">Mã: <s:property value="#pl.sinbyteTaskId"/></div></s:if>
+            <s:if test="#pl.indexStatus != null"><div><span class="badge <s:if test="#pl.indexStatus == 'Đã index'">ok</s:if><s:else>wait</s:else>"><s:property value="#pl.indexStatus"/></span>
+              <span class="muted"><s:property value="#pl.indexCheckedAtText"/></span></div></s:if>
           </s:if><s:else><span class="muted">Chưa gửi</span></s:else>
         </td>
       </tr>

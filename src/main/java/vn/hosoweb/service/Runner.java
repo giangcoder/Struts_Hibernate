@@ -49,6 +49,10 @@ public final class Runner {
     private volatile int index, total, done, waiting, skipped;
     private final Deque<String> log = new ArrayDeque<>();
     private final AtomicReference<Decision> decision = new AtomicReference<>();
+    /** Trang đang xử lý — chỉ nhận lệnh từ trang này. */
+    private volatile Page currentPage;
+    /** Mã bí mật của lượt chạy: chỉ khung điều khiển do ứng dụng chèn mới biết, trang web không đọc được. */
+    private volatile String token;
 
     private Runner() { }
 
@@ -70,6 +74,7 @@ public final class Runner {
      */
     public synchronized String start(long owner, long project, String mode, String autofillJs) {
         if (running) return "Đang có một lượt chạy khác. Dừng lượt đó trước.";
+        int[] missing = {0};
         List<Long> ids = HibernateUtil.tx(s -> {
             List<Platform> l = s.createQuery("select pl from Platform pl where pl.project.id = :p and pl.project.owner.id = :o "
                             + "and pl.status in (:st) order by pl.position, pl.id", Platform.class)
@@ -77,7 +82,9 @@ public final class Runner {
                     .setParameterList("st", Platform.PENDING).list();
             if ("auto".equals(mode)) l.removeIf(Platform::isCaptchaManual);
             else if ("captcha".equals(mode)) l.removeIf(p -> !p.isCaptchaManual());
+            int before = l.size();
             l.removeIf(p -> !Urls.isHttpUrl(p.isOwnedProfile() ? p.getExistingProfileUrl() : p.getSignupUrl()));
+            missing[0] = before - l.size();
             return l.stream().map(Platform::getId).toList();
         });
         if (ids.isEmpty()) return "Không có mục nào cần xử lý (hoặc các mục còn lại thiếu URL đăng ký).";
@@ -88,6 +95,8 @@ public final class Runner {
         index = 0; total = ids.size(); done = 0; waiting = 0; skipped = 0;
         current = null;
         log.clear();
+        if (missing[0] > 0) log(missing[0] + " mục thiếu URL đăng ký nên không chạy — bổ sung URL ở màn hình Tạo.");
+        token = UUID.randomUUID().toString();
         Thread t = new Thread(() -> runSafely(owner, project, ids, autofillJs), "hosoweb-runner");
         t.setDaemon(true);
         t.start();
@@ -117,12 +126,14 @@ public final class Runner {
         try (Playwright pw = createPlaywright(); BrowserContext ctx = launch(pw)) {
             ctx.exposeBinding("__hosowebAction", (source, args) -> {
                 Map<?, ?> m = args.length > 0 && args[0] instanceof Map<?, ?> mm ? mm : Map.of();
+                if (!token.equals(str(m.get("t"))) || source.page() != currentPage) return false; // bỏ qua lệnh giả từ trang web
                 String u = str(m.get("username"));
                 if (u == null || u.isBlank()) u = currentUser;
                 decision.set(new Decision(str(m.get("action")), str(m.get("url")), u, str(m.get("step"))));
                 return true;
             });
             ctx.exposeBinding("__hosowebUserSet", (source, args) -> {
+                if (source.page() != currentPage) return false;
                 if (args.length > 0 && args[0] != null && !args[0].toString().isBlank()) currentUser = args[0].toString();
                 return true;
             });
@@ -133,7 +144,7 @@ public final class Runner {
                 m.put("total", total);
                 return m;
             });
-            ctx.addInitScript(overlayScript(autofillJs, data));
+            ctx.addInitScript(overlayScript(autofillJs, data, token));
 
             for (Long id : ids) {
                 if (stopRequested) break;
@@ -145,6 +156,7 @@ public final class Runner {
                 String url = pl.isOwnedProfile() ? pl.getExistingProfileUrl() : pl.getSignupUrl();
                 log("(" + index + "/" + total + ") " + pl.getName() + " — mở " + url);
                 Page page = ctx.newPage();
+                currentPage = page;
                 decision.set(null);
                 try {
                     page.navigate(url, new Page.NavigateOptions().setTimeout(45_000));
@@ -199,7 +211,7 @@ public final class Runner {
                     if (!p.isDone() || p.getCompletedAt() == null) p.setCompletedAt(LocalDateTime.now());
                     p.setStatus(Platform.ST_DONE);
                     p.setPendingStep(null);
-                    p.setSinbyteStatus(null); p.setSinbyteTaskId(null); p.setSinbyteSentAt(null);
+                    p.setSinbyteStatus(null); p.setSinbyteTaskId(null); p.setSinbyteSentAt(null); p.setIndexStatus(null);
                     done++;
                     return "Hoàn tất → " + u;
                 }
@@ -243,7 +255,7 @@ public final class Runner {
     private BrowserContext launch(Playwright pw) {
         Path profile = Paths.get(Optional.ofNullable(System.getenv("HOSOWEB_BROWSER_PROFILE")).orElse("data/browser-profile"));
         boolean headless = "true".equalsIgnoreCase(System.getenv("HOSOWEB_RUNNER_HEADLESS"));
-        List<String> args = new ArrayList<>(List.of("--disable-blink-features=AutomationControlled"));
+        List<String> args = new ArrayList<>();
         String cdp = System.getenv("HOSOWEB_RUNNER_CDP_PORT");
         if (cdp != null) args.add("--remote-debugging-port=" + cdp);
         BrowserType.LaunchPersistentContextOptions o = new BrowserType.LaunchPersistentContextOptions()
@@ -288,22 +300,24 @@ public final class Runner {
     }
 
     /** Script chạy trên mọi trang: định nghĩa hàm tự điền (không tự chạy) và khung nút điều khiển. */
-    static String overlayScript(String autofillJs, String dataJson) {
+    static String overlayScript(String autofillJs, String dataJson, String token) {
         String fill = autofillJs == null ? "" : autofillJs.trim()
                 .replaceFirst("\\n\\s*run\\(\\);\\s*\\n\\}\\s*$", "\n}"); // chỉ định nghĩa, không tự điền ngay
         return """
                 (function () {
                   if (window.top !== window) return;
+                  var ACT = window.__hosowebAction, INFO = window.__hosowebInfo, USET = window.__hosowebUserSet;
                   try { (%s)(%s); } catch (e) {}
                   var f0 = window.__hosowebFill;
-                  if (f0) window.__hosowebFill = function () { f0(); try { window.__hosowebUserSet(window.__hosowebUser || ''); } catch (e) {} };
-                  function act(o) { o.username = window.__hosowebUser || ''; return window.__hosowebAction(o); }
+                  if (f0) window.__hosowebFill = function () { f0(); try { USET(window.__hosowebUser || ''); } catch (e) {} };
+                  var TK = %s;
+                  function act(o) { o.username = window.__hosowebUser || ''; o.t = TK; return ACT(o); }
                   function build() {
                     if (!document.body || document.getElementById('__hosoweb_ctrl')) return;
                     var c = document.createElement('div'); c.id = '__hosoweb_ctrl';
                     c.style.cssText = 'position:fixed;z-index:2147483647;top:12px;right:12px;width:270px;background:#17202b;color:#fff;font:13px/1.4 system-ui,sans-serif;padding:10px 12px;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.35)';
                     var h = document.createElement('div'); h.style.cssText = 'font-weight:600;margin-bottom:6px'; h.textContent = 'Hồ sơ Web'; c.appendChild(h);
-                    window.__hosowebInfo().then(function (i) { if (i && i.name) h.textContent = 'Hồ sơ Web · ' + i.name + ' (' + i.index + '/' + i.total + ')'; });
+                    INFO().then(function (i) { if (i && i.name) h.textContent = 'Hồ sơ Web · ' + i.name + ' (' + i.index + '/' + i.total + ')'; });
                     function btn(label, bg, fn) {
                       var b = document.createElement('button'); b.type = 'button'; b.textContent = label;
                       b.style.cssText = 'display:block;width:100%%;margin:4px 0;padding:6px 8px;border-radius:6px;border:0;cursor:pointer;font:inherit;text-align:left;color:#fff;background:' + bg;
@@ -341,7 +355,11 @@ public final class Runner {
                   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', build); else build();
                   new MutationObserver(build).observe(document.documentElement, { childList: true, subtree: false });
                 })();
-                """.formatted(fill, dataJson);
+                """.formatted(fill, dataJson, JSON_QUOTE(token));
+    }
+
+    private static String JSON_QUOTE(String s) {
+        try { return JSON.writeValueAsString(s); } catch (Exception e) { return "\"\""; }
     }
 
     private static String str(Object o) { return o == null ? null : o.toString(); }

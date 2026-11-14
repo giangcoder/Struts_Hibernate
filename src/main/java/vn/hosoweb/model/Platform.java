@@ -52,6 +52,9 @@ public class Platform {
     @Column(length = 50) private String sinbyteStatus;
     @Column(length = 100) private String sinbyteTaskId;
     private LocalDateTime sinbyteSentAt;
+    /** Kết quả index theo Sinbyte: "Đã index" / "Chưa index". */
+    @Column(length = 30) private String indexStatus;
+    private LocalDateTime indexCheckedAt;
 
     /** Người dùng đánh dấu nền tảng có CAPTCHA — xử lý thủ công. */
     private Boolean captchaManual;
@@ -145,6 +148,11 @@ public class Platform {
     public void setSinbyteTaskId(String v) { sinbyteTaskId = v; }
     public LocalDateTime getSinbyteSentAt() { return sinbyteSentAt; }
     public void setSinbyteSentAt(LocalDateTime v) { sinbyteSentAt = v; }
+    public String getIndexStatus() { return indexStatus; }
+    public void setIndexStatus(String v) { indexStatus = v; }
+    public LocalDateTime getIndexCheckedAt() { return indexCheckedAt; }
+    public void setIndexCheckedAt(LocalDateTime v) { indexCheckedAt = v; }
+    public String getIndexCheckedAtText() { return indexCheckedAt == null ? "" : indexCheckedAt.format(FMT); }
     public int getPosition() { return position; }
     public void setPosition(int v) { position = v; }
     public LocalDateTime getCreatedAt() { return createdAt; }

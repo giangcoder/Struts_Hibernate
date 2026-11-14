@@ -27,5 +27,23 @@ class CsvAndSinbyteTest {
         assertEquals("Hết credit", err.message());
 
         assertFalse(SinbyteClient.interpret(401, "Unauthorized").accepted());
+        // Định dạng thật khi khóa sai
+        var bad = SinbyteClient.interpret(400, "{\"message\":\"Invalid apikey\"}");
+        assertFalse(bad.accepted());
+        assertEquals("Invalid apikey", bad.message());
+        // Định dạng thật của tác vụ vừa tạo / chi tiết
+        var created = SinbyteClient.interpret(201, "{\"id\":7840887,\"name\":\"x\",\"status\":\"pending\",\"total\":2}");
+        assertTrue(created.accepted());
+        assertEquals("7840887", created.taskId());
+    }
+
+    @Test
+    void sinbyteParsesTaskDetail() {
+        var d = SinbyteClient.parseDetail(200, "{\"id\":7828057,\"status\":\"done\",\"urls\":[{\"id\":1,\"url\":\"https://a.com/x\",\"indexed\":\"yes\"},{\"id\":2,\"url\":\"https://b.com/\",\"indexed\":\"no\"}]}");
+        assertTrue(d.ok());
+        assertEquals("done", d.status());
+        assertEquals(Boolean.TRUE, d.indexed().get("https://a.com/x"));
+        assertEquals(Boolean.FALSE, d.indexed().get("https://b.com/"));
+        assertFalse(SinbyteClient.parseDetail(400, "{\"message\":\"Invalid apikey\"}").ok());
     }
 }

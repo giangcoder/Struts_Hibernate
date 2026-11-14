@@ -58,11 +58,12 @@ public class ResultAction extends ProjectScopedAction {
             List<Platform> rows = onlyDone ? Repo.completed(s, project.getId()) : Repo.platforms(s, project.getId());
             if (onlyDone) {
                 sb.append(Csv.row(List.of("Nền tảng", "Nhóm", "Username", "URL hồ sơ", "Hoàn tất lúc", "Ghi chú",
-                        "Hỗ trợ liên kết social", "Liên kết social đã gắn", "Trạng thái Sinbyte", "Mã tác vụ Sinbyte", "Gửi Sinbyte lúc")));
+                        "Hỗ trợ liên kết social", "Liên kết social đã gắn", "Trạng thái Sinbyte", "Mã tác vụ Sinbyte", "Gửi Sinbyte lúc", "Index", "Kiểm tra index lúc")));
                 for (Platform p : rows) {
                     sb.append(Csv.row(Arrays.asList(p.getName(), p.getGroupName(), p.getUsername(), p.getProfileUrl(),
                             p.getCompletedAtText(), p.getNote(), p.getSocialSupport(), attachedLinks(p),
-                            p.getSinbyteStatus(), p.getSinbyteTaskId(), p.getSinbyteSentAtText())));
+                            p.getSinbyteStatus(), p.getSinbyteTaskId(), p.getSinbyteSentAtText(),
+                            p.getIndexStatus(), p.getIndexCheckedAtText())));
                 }
             } else {
                 sb.append(Csv.row(List.of("STT", "Nền tảng", "Nhóm", "Trạng thái", "URL đăng ký", "Link hồ sơ hiện có",
@@ -128,6 +129,46 @@ public class ResultAction extends ProjectScopedAction {
         } else {
             flashError("Sinbyte chưa tiếp nhận: " + r.message());
         }
+        return SUCCESS;
+    }
+
+    /** Hỏi Sinbyte trạng thái index của các URL đã gửi (GET, miễn phí). */
+    public String sinbyteCheck() {
+        Map<String, List<Long>> byTask = new LinkedHashMap<>();
+        Map<Long, String> urlOf = new HashMap<>();
+        boolean ok = HibernateUtil.tx(s -> {
+            if (!loadProject(s)) return false;
+            for (Platform p : Repo.completed(s, project.getId())) {
+                if (p.getSinbyteTaskId() == null || !"Đã gửi Sinbyte".equals(p.getSinbyteStatus())) continue;
+                byTask.computeIfAbsent(p.getSinbyteTaskId(), k -> new ArrayList<>()).add(p.getId());
+                urlOf.put(p.getId(), p.getProfileUrl());
+            }
+            return true;
+        });
+        if (!ok) return "notfound";
+        if (byTask.isEmpty()) { flashError("Chưa có URL nào đã gửi Sinbyte để kiểm tra."); return SUCCESS; }
+        SinbyteClient c = new SinbyteClient();
+        int yes = 0, no = 0, unknown = 0;
+        List<String> errs = new ArrayList<>();
+        Map<Long, String> result = new HashMap<>();
+        for (Map.Entry<String, List<Long>> e : byTask.entrySet()) {
+            SinbyteClient.TaskDetail d = c.detail(apiKey, e.getKey());
+            if (!d.ok()) { errs.add("Tác vụ " + e.getKey() + ": " + d.message()); unknown += e.getValue().size(); continue; }
+            Map<String, Boolean> byKey = new HashMap<>();
+            d.indexed().forEach((u, v) -> byKey.put(vn.hosoweb.util.Urls.dedupeKey(u), v));
+            for (Long pid : e.getValue()) {
+                Boolean v = byKey.get(vn.hosoweb.util.Urls.dedupeKey(urlOf.get(pid)));
+                if (v == null) { unknown++; continue; }
+                result.put(pid, v ? "Đã index" : "Chưa index");
+                if (v) yes++; else no++;
+            }
+        }
+        HibernateUtil.run(s -> {
+            LocalDateTime now = LocalDateTime.now();
+            result.forEach((pid, st) -> { Platform p = s.get(Platform.class, pid); p.setIndexStatus(st); p.setIndexCheckedAt(now); });
+        });
+        flash("Kiểm tra index: " + yes + " đã index, " + no + " chưa index" + (unknown > 0 ? ", " + unknown + " chưa có kết quả" : "") + ".");
+        errs.forEach(this::flashError);
         return SUCCESS;
     }
 

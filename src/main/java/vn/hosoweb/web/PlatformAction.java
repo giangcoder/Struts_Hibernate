@@ -293,7 +293,7 @@ public class PlatformAction extends ProjectScopedAction {
             } else {
                 p.setCompletedAt(null);
             }
-            if (urlChanged) { p.setSinbyteStatus(null); p.setSinbyteTaskId(null); p.setSinbyteSentAt(null); }
+            if (urlChanged) { p.setSinbyteStatus(null); p.setSinbyteTaskId(null); p.setSinbyteSentAt(null); p.setIndexStatus(null); }
             p.setStatus(status);
             p.touch();
             p.getProject().touch();

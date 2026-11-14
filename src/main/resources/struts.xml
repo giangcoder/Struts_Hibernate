@@ -17,12 +17,18 @@
             <interceptor name="auth" class="vn.hosoweb.web.AuthInterceptor"/>
             <interceptor-stack name="publicStack">
                 <interceptor-ref name="csrf"/>
-                <interceptor-ref name="defaultStack"/>
+                <interceptor-ref name="defaultStack">
+                    <param name="exception.logEnabled">true</param>
+                    <param name="exception.logLevel">ERROR</param>
+                </interceptor-ref>
             </interceptor-stack>
             <interceptor-stack name="appStack">
                 <interceptor-ref name="auth"/>
                 <interceptor-ref name="csrf"/>
-                <interceptor-ref name="defaultStack"/>
+                <interceptor-ref name="defaultStack">
+                    <param name="exception.logEnabled">true</param>
+                    <param name="exception.logLevel">ERROR</param>
+                </interceptor-ref>
             </interceptor-stack>
         </interceptors>
         <default-interceptor-ref name="publicStack"/>
@@ -204,6 +210,12 @@
         </action>
         <action name="sinbyte" class="vn.hosoweb.web.ResultAction" method="sinbyte">
             <result>/WEB-INF/jsp/sinbyte.jsp</result>
+        </action>
+        <action name="sinbyteCheck" class="vn.hosoweb.web.ResultAction" method="sinbyteCheck">
+            <result type="redirectAction">
+                <param name="actionName">results</param>
+                <param name="projectId">${projectId}</param>
+            </result>
         </action>
         <action name="sinbyteSubmit" class="vn.hosoweb.web.ResultAction" method="sinbyteSubmit">
             <result type="redirectAction">
