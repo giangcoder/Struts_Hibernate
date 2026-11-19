@@ -272,6 +272,7 @@ function mlt_pagination($query = null)
 add_action('pre_get_posts', function ($q) {
     if (!is_admin() && $q->is_main_query() && ($q->is_home() || $q->is_archive()) && !empty($_GET['page']) && !$q->get('paged')) {
         $q->set('paged', max(1, (int) $_GET['page']));
+        $q->set('page', '');
     }
 });
 
@@ -375,3 +376,20 @@ add_filter('the_content', function ($c) {
     }
     return $c;
 }, 1);
+
+/* Giữ link phân trang kiểu cũ /blog?page=N (không để WP chuyển hướng về trang 1) */
+add_filter('redirect_canonical', function ($redirect) {
+    $path = (string) parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
+    if (!empty($_GET['page']) && preg_match('#^/(blog|category|tag)(/|$)#', $path)) {
+        return false;
+    }
+    return $redirect;
+});
+
+add_filter('request', function ($qv) {
+    if (!is_admin() && !empty($_GET['page']) && (isset($qv['pagename']) || isset($qv['category_name']) || isset($qv['tag']))) {
+        unset($qv['page']);
+        $qv['paged'] = max(1, (int) $_GET['page']);
+    }
+    return $qv;
+});
