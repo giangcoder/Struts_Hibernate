@@ -1,0 +1,10 @@
+/*
+Theme Name: MuaLikes
+Theme URI: https://mualikes.net/
+Author: MuaLikes.Net
+Description: Giao diện SMM panel (AdminLTE 3) giống 100% MuaLikes.Net. Cần plugin "MuaLikes Core" để hoạt động đầy đủ (dịch vụ, đơn hàng, nạp tiền, cấp bậc, API).
+Version: 1.0.0
+Requires PHP: 7.4
+Text Domain: mualikes
+*/
+/* Toàn bộ CSS giao diện nằm trong assets/css/app.css (bản gốc) và assets/css/wp.css (bổ sung cho WordPress). */

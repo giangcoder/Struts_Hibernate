@@ -1,0 +1,12 @@
+/* Bổ sung cho WordPress (không có trong app.css gốc) */
+body.admin-bar .main-header.navbar { top: 32px; }
+body.admin-bar .main-sidebar { top: 32px; }
+@media (max-width: 782px) { body.admin-bar .main-header.navbar, body.admin-bar .main-sidebar { top: 46px; } }
+.content img { max-width: 100%; height: auto; }
+.alignleft { float: left; margin: 0 1em 1em 0; }
+.alignright { float: right; margin: 0 0 1em 1em; }
+.aligncenter { display: block; margin-left: auto; margin-right: auto; }
+.wp-caption, figure { max-width: 100%; }
+.wp-caption-text, figcaption { font-size: 90%; color: #6c757d; text-align: center; }
+.screen-reader-text { position: absolute !important; clip: rect(1px, 1px, 1px, 1px); width: 1px; height: 1px; overflow: hidden; }
+.box-profile .fa-user-circle { color: var(--primary); }
