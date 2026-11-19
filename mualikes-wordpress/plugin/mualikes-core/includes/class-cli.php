@@ -39,6 +39,9 @@ class ML_CLI
      *
      * [--deposit]
      * : Tính vào tổng nạp (dùng để lên cấp bậc).
+     *
+     * [--note=<note>]
+     * : Nội dung giao dịch.
      */
     public function credit($args, $assoc)
     {

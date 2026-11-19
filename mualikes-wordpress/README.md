@@ -10,7 +10,21 @@ mualikes-wordpress/
 └── dist/                      → mualikes-theme.zip, mualikes-core.zip (upload qua wp-admin)
 ```
 
-## 1. Cài đặt
+## 0. Cài nhanh trên máy tính (local, Docker)
+
+1. Cài **Docker Desktop** (Windows/macOS) và mở nó lên.
+2. Giải nén `dist/mualikes-local.zip`, vào thư mục `mualikes-wordpress/local/`.
+3. Windows: bấm đúp `install.bat`. macOS/Linux: chạy `./install.sh` (thêm `--images` để tải luôn ảnh bài viết về máy).
+4. Đợi 2–5 phút (lần đầu tải image), rồi mở **http://localhost:8080**
+   - Quản trị: http://localhost:8080/wp-admin — `admin` / `admin123`
+   - Khách thử: `khachtest` / `khach123` (có sẵn 1.000.000đ để đặt đơn thử)
+5. Dừng: `docker compose stop` · Chạy lại: `docker compose up -d` · Xoá hẳn: `./uninstall.sh`
+
+Theme/plugin được gắn trực tiếp từ thư mục `theme/` và `plugin/`, sửa code là thấy ngay.
+
+**Không dùng Docker?** Dùng XAMPP/Laragon/LocalWP: tạo site WordPress ở gốc (VD `http://mualikes.test/`), upload 2 file zip theo mục 1 bên dưới.
+
+## 1. Cài đặt (hosting / WordPress có sẵn)
 
 1. WordPress ≥ 6.0, PHP ≥ 7.4, MySQL/MariaDB. **Cài WordPress ở gốc tên miền** (VD `https://domain.com/`), vì JS gốc gọi đường dẫn tuyệt đối `/server/graph-api`, `/auth/login`.
 2. Upload `dist/mualikes-core.zip` (Plugins → Add New → Upload) và kích hoạt.
